@@ -1,6 +1,8 @@
 import sys
 from pathlib import Path
 from config_loader import Configloader, ConfigValidator
+from game_config import GameConfig
+
 
 def main() -> int:
     """Run the Pac-Man application."""
@@ -32,6 +34,7 @@ def main() -> int:
     print(valid.config_level)
     print(valid.config_data["width"])
     print(valid.config_data["height"])
+    game = GameConfig(valid)
     
     return 0
 
