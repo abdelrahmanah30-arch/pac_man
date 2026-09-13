@@ -28,6 +28,11 @@ def main() -> int:
     config_data = conf.load()
     valid = ConfigValidator(config_data)
     valid.validate()
+    print(valid.config_data["lives"])
+    print(valid.config_level)
+    print(valid.config_data["width"])
+    print(valid.config_data["height"])
+    
     return 0
 
 

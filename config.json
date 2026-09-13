@@ -3,23 +3,25 @@
     "highscore_filename": "data/highscores.json",
 
     "level": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        -6,
+        "1",
+        "2",
+        "3",
+        "5",
+        "6",
+        -4,
+        "abd",
         7,
         8,
         9,
-        10
+        10,
+        18
     ],
                             # welcome in the my zone
 
-    "width": 21,
-    "height": 21,
+    "width": "abd",
+    "height": -825,
 
-    "lives": 3,
+    "lives": "2",
 
     "pacgum": 42,
 
