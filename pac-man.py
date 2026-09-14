@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 from config_loader import Configloader, ConfigValidator
 from game_config import GameConfig
-
+from maze_manager import MazeManager
 
 def main() -> int:
     """Run the Pac-Man application."""
@@ -35,6 +35,8 @@ def main() -> int:
     print(valid.config_data["width"])
     print(valid.config_data["height"])
     game = GameConfig(valid)
+    maze = MazeManager(game.width, game.height, game.seed)
+
     
     return 0
 
