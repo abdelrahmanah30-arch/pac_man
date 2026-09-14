@@ -1,10 +1,4 @@
-from enum import Enum
-
-class Direction(Enum):
-    UP = "UP"
-    DOWN = "DOWN"
-    LEFT = "LEFT"
-    RIGHT = "RIGHT"
+from direction import Direction
 
 class Player:
     def __init__(self, start_position, lives):

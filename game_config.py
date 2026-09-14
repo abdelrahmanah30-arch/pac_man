@@ -11,6 +11,3 @@ class GameConfig:
         self.points_per_ghost = valid.config_data["points_per_ghost"]
         self.level_max_time = valid.config_data["level_max_time"]
         self.highscore_filename = valid.config_data["highscore_filename"]
-
-    def General(self):
-        ...
