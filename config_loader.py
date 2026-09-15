@@ -15,17 +15,8 @@ class Configloader:
                 read_file = file_object.readline()
 
             specifoc_json = "".join(self.file_list)
-            print("#######")
-            print(specifoc_json)
-            print("#######")
             try:
-                print("converte to json")
                 config_data = json.loads(specifoc_json)
-                print(config_data["highscore_filename"])
-                print(config_data["level"])
-                print(type(config_data))
-                print(type(config_data["highscore_filename"]))
-                print(type(config_data["level"]))
                 return config_data
             except json.JSONDecodeError as error:
                 print(error)

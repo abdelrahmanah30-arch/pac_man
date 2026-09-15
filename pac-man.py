@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+import pygame
 
 from config_loader import Configloader, ConfigValidator
 from game_config import GameConfig
@@ -11,26 +12,50 @@ from ghost import Ghost
 from score_manager import ScoreManager
 from high_score import HighScoreManager
 
+from input_handler import InputHandler
+from renderer import Renderer
+
+
 
 class GameState:
+
     MENU = "MENU"
     PLAYING = "PLAYING"
     GAME_OVER = "GAME_OVER"
     WIN = "WIN"
 
 
+
 class Game:
 
     def __init__(self, config):
 
+        pygame.init()
+
         self.config = config
 
-        # Game state
         self.state = GameState.MENU
         self.running = True
 
 
-        # Maze
+        # FPS control
+
+        self.clock = pygame.time.Clock()
+
+
+
+        # -----------------
+        # Input Handler
+        # -----------------
+
+        self.input_handler = InputHandler()
+
+
+
+        # -----------------
+        # Create Maze
+        # -----------------
+
         self.maze = MazeManager(
             config.width,
             config.height,
@@ -38,15 +63,35 @@ class Game:
         )
 
 
-        # Player start position
-        # مؤقت إلى أن يصبح عندنا Maze Generator
+
+        # -----------------
+        # Renderer
+        # -----------------
+
+        self.renderer = Renderer(
+            config.width,
+            config.height
+        )
+
+        self.renderer.initialize()
+
+
+
+        # -----------------
+        # Create Player
+        # -----------------
+
         self.player = Player(
             start_position=(1, 1),
             lives=config.lives
         )
 
 
-        # Ghosts
+
+        # -----------------
+        # Create Ghosts
+        # -----------------
+
         self.ghosts = [
 
             Ghost(
@@ -58,14 +103,25 @@ class Game:
                 start_position=(5, 6),
                 color="blue"
             )
+
         ]
 
 
-        # Score
-        self.score_manager = ScoreManager(config)
+
+        # -----------------
+        # Score System
+        # -----------------
+
+        self.score_manager = ScoreManager(
+            config
+        )
 
 
+
+        # -----------------
         # High Score
+        # -----------------
+
         self.high_score = HighScoreManager(
             config.highscore_filename
         )
@@ -74,29 +130,89 @@ class Game:
 
 
 
+        print("Game initialized successfully")
+
+
+
+
+
     def start(self):
 
         self.state = GameState.PLAYING
 
+        print("Game started")
+
+
         while self.running:
 
+
+
+            # Input
+
+            if not self.input_handler.handle_input():
+
+                self.running = False
+                break
+
+
+
+            direction = self.input_handler.get_direction()
+
+
+            if direction:
+
+                self.player.change_direction(
+                    direction
+                )
+
+
+
+            # Update game
+
             self.update()
+
+
+
+            # Render game
+
+            self.render()
+
+
 
             self.check_game_state()
 
 
 
+            self.clock.tick(60)
+
+
+
+        pygame.quit()
+
+
+
+
+
+
     def update(self):
 
+
         if self.state != GameState.PLAYING:
+
             return
 
 
-        # Player movement
-        self.player.move(self.maze)
+
+        # Player
+
+        self.player.move(
+            self.maze
+        )
 
 
-        # Ghost movement
+
+        # Ghosts
+
         for ghost in self.ghosts:
 
             ghost.chase(
@@ -105,24 +221,55 @@ class Game:
             )
 
 
+
         # Collision
+
         self.check_collision()
+
+
+
+
+
+    def render(self):
+
+
+        self.renderer.clear()
+
+
+        self.renderer.draw_maze(
+            self.maze.maze
+        )
+
+
+        self.renderer.update()
+
+
 
 
 
     def check_collision(self):
 
+
         for ghost in self.ghosts:
+
 
             if ghost.position == self.player.position:
 
+
+                print("Ghost caught Player")
+
+
                 self.player.lose_life()
+
 
                 break
 
 
 
+
+
     def check_game_state(self):
+
 
         if not self.player.is_alive():
 
@@ -130,7 +277,10 @@ class Game:
 
 
 
+
+
     def game_over(self):
+
 
         self.state = GameState.GAME_OVER
 
@@ -138,35 +288,54 @@ class Game:
         current_score = self.score_manager.get_score()
 
 
+
         self.high_score.update(
             current_score
         )
 
 
-        print("GAME OVER")
-        print("Score:", current_score)
+
+        print("\nGAME OVER")
+
+        print(
+            "Score:",
+            current_score
+        )
+
+
         print(
             "High Score:",
             self.high_score.get_highscore()
         )
 
 
+
         self.running = False
+
+
+
+
 
 
 
 def main():
 
+
     if len(sys.argv) != 2:
 
         print(
-            "Usage: python3 pac-man.py config.json"
+            "Usage: python3 pac-man.py <config.json>"
         )
 
         return 1
 
 
-    config_path = Path(sys.argv[1])
+
+
+    config_path = Path(
+        sys.argv[1]
+    )
+
 
 
     if config_path.suffix.lower() != ".json":
@@ -179,42 +348,81 @@ def main():
 
 
 
+
     if not config_path.exists():
 
         print(
-            "Error: file not found"
+            "Error: configuration file not found"
         )
 
         return 1
 
 
 
-    loader = Configloader(config_path)
 
-    config_data = loader.load()
-
-
-    validator = ConfigValidator(config_data)
-
-    validator.validate()
+    try:
 
 
-    game_config = GameConfig(
-        validator
-    )
+        loader = Configloader(
+            config_path
+        )
 
 
-    game = Game(
-        game_config
-    )
+        config_data = loader.load()
 
 
-    game.start()
+
+        validator = ConfigValidator(
+            config_data
+        )
+
+
+        validator.validate()
+
+
+
+        game_config = GameConfig(
+            validator
+        )
+
+
+
+        print(
+            "Configuration loaded successfully"
+        )
+
+
+
+        game = Game(
+            game_config
+        )
+
+
+        game.start()
+
+
+
+    except Exception as error:
+
+
+        print(
+            "Error:",
+            error
+        )
+
+        return 1
+
+
 
 
     return 0
 
 
 
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+
+    sys.exit(
+        main()
+    )
