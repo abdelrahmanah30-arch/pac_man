@@ -17,6 +17,8 @@ class Renderer:
     
         self.wall_color = (0, 0, 255)
         self.floor_color = (0, 0, 0)
+
+        self.player_color = (255, 255, 0)
     
         self.clock = None
         self.font = None
@@ -78,3 +80,18 @@ class Renderer:
                             self.cell_size
                         )
                     )
+
+    def draw_player(self, player):
+        row, col = player.position
+
+        center_x = col * self.cell_size + self.cell_size // 2
+        center_y = row * self.cell_size + self.cell_size // 2
+
+        radius = self.cell_size // 2 - 4
+
+        pygame.draw.circle(
+            self.screen,
+            self.player_color,
+            (center_x, center_y),
+            radius
+        )

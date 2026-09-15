@@ -4,6 +4,7 @@ class GameConfig:
         self.height = valid.config_data["height"]
         self.seed = valid.config_data["seed"]
         self.lives = valid.config_data["lives"]
+
         self.levels = valid.config_level
         self.pacgum = valid.config_data["pacgum"]
         self.points_per_pacgum = valid.config_data["points_per_pacgum"]

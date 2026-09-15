@@ -33,7 +33,6 @@ class Game:
         pygame.init()
 
         self.config = config
-
         self.state = GameState.MENU
         self.running = True
 
@@ -42,6 +41,7 @@ class Game:
 
         self.clock = pygame.time.Clock()
 
+        self.ghost_move_timer = 0
 
 
         # -----------------
@@ -213,12 +213,18 @@ class Game:
 
         # Ghosts
 
-        for ghost in self.ghosts:
+        self.ghost_move_timer += 1
 
-            ghost.chase(
-                self.maze,
-                self.player.position
-            )
+        if self.ghost_move_timer >= 15:
+
+            for ghost in self.ghosts:
+
+                ghost.chase(
+                    self.maze,
+                    self.player.position
+                )
+
+            self.ghost_move_timer = 0
 
 
 
@@ -232,14 +238,15 @@ class Game:
 
     def render(self):
 
-
         self.renderer.clear()
-
 
         self.renderer.draw_maze(
             self.maze.maze
         )
 
+        self.renderer.draw_player(
+            self.player
+        )
 
         self.renderer.update()
 
