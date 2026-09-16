@@ -147,8 +147,6 @@ class Game:
 
 
 
-            # Input
-
             if not self.input_handler.handle_input():
 
                 self.running = False
@@ -167,17 +165,9 @@ class Game:
 
 
 
-            # Update game
-
             self.update()
 
-
-
-            # Render game
-
             self.render()
-
-
 
             self.check_game_state()
 
@@ -203,19 +193,17 @@ class Game:
 
 
 
-        # Player
-
         self.player.move(
             self.maze
         )
 
 
 
-        # Ghosts
-
         self.ghost_move_timer += 1
 
-        if self.ghost_move_timer >= 15:
+
+        if self.ghost_move_timer >= 30:
+
 
             for ghost in self.ghosts:
 
@@ -224,11 +212,10 @@ class Game:
                     self.player.position
                 )
 
+
             self.ghost_move_timer = 0
 
 
-
-        # Collision
 
         self.check_collision()
 
@@ -240,12 +227,18 @@ class Game:
 
         self.renderer.clear()
 
+
         self.renderer.draw_maze(
             self.maze.maze
         )
 
+
         self.renderer.draw_player(
             self.player
+        )
+
+        self.renderer.draw_ghosts(
+            self.ghosts
         )
 
         self.renderer.update()
@@ -262,13 +255,13 @@ class Game:
 
             if ghost.position == self.player.position:
 
-
                 print("Ghost caught Player")
-
-
+            
                 self.player.lose_life()
-
-
+            
+                for ghost in self.ghosts:
+                    ghost.position = ghost.start_position
+            
                 break
 
 

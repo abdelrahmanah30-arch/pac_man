@@ -1,10 +1,15 @@
 from collections import deque
 
+from direction import Direction
+
+
 
 class BFSSolver:
 
+
     def __init__(self):
         pass
+
 
 
     def find_path(self, maze, start, goal):
@@ -18,26 +23,45 @@ class BFSSolver:
             list of positions
         """
 
+
         queue = deque()
 
         visited = set()
 
         parent = {}
 
+
         queue.append(start)
+
         visited.add(start)
+
+
 
         while queue:
 
+
             current = queue.popleft()
 
+
             if current == goal:
-                return self.reconstruct_path(parent, start, goal)
+
+                return self.reconstruct_path(
+                    parent,
+                    start,
+                    goal
+                )
 
 
-            for neighbor in self.get_neighbors(maze, current):
+
+            for neighbor in self.get_neighbors(
+                maze,
+                current
+            ):
+
 
                 if neighbor not in visited:
+
+
                     visited.add(neighbor)
 
                     parent[neighbor] = current
@@ -45,49 +69,85 @@ class BFSSolver:
                     queue.append(neighbor)
 
 
+
         return []
+
+
+
 
 
     def get_neighbors(self, maze, position):
 
+
         row, col = position
+
 
         neighbors = [
 
-            (row - 1, col),
+            (
+                (row - 1, col),
+                Direction.UP
+            ),
 
-            (row + 1, col),
+            (
+                (row + 1, col),
+                Direction.DOWN
+            ),
 
-            (row, col - 1),
+            (
+                (row, col - 1),
+                Direction.LEFT
+            ),
 
-            (row, col + 1)
+            (
+                (row, col + 1),
+                Direction.RIGHT
+            )
+
         ]
+
 
 
         valid_neighbors = []
 
-        for cell in neighbors:
 
-            if maze.is_valid_position(cell):
-                valid_neighbors.append(cell)
+
+        for cell, direction in neighbors:
+
+
+            if maze.is_valid_position(
+                position,
+                direction
+            ):
+
+                valid_neighbors.append(
+                    cell
+                )
+
 
 
         return valid_neighbors
 
 
 
+
+
     def reconstruct_path(self, parent, start, goal):
+
 
         path = []
 
         current = goal
 
 
+
         while current != start:
+
 
             path.append(current)
 
             current = parent[current]
+
 
 
         path.append(start)
