@@ -7,9 +7,10 @@ class SpriteManager:
 
         self.cell_size = cell_size
 
-        self.player = None
-
         self.ghosts = {}
+
+        self.player_open = None
+        self.player_close = None
 
 
 
@@ -17,49 +18,93 @@ class SpriteManager:
 
         # Player
 
-        self.player = pygame.image.load(
+        self.player_close = pygame.image.load(
+            "assets/player/close.png"
+        )
+        self.player_open = pygame.image.load(
             "assets/player/pacman.png"
         )
 
-        self.player = pygame.transform.scale(
-            self.player,
+        self.player_open = pygame.transform.scale(
+            self.player_open,
             (
                 self.cell_size,
                 self.cell_size
             )
         )
 
-
+        self.player_close = pygame.transform.scale(
+            self.player_close,
+            (
+                self.cell_size,
+                self.cell_size
+            )
+        )
 
         # Ghosts
 
-        self.ghosts["red"] = pygame.image.load(
-            "assets/ghosts/red.png"
-        )
+        colors = [
+            "blue",
+            "green",
+            "orange",
+            "purple"
+        ]
 
-        self.ghosts["blue"] = pygame.image.load(
-            "assets/ghosts/blue.png"
-        )
+        directions = [
+            "up",
+            "down",
+            "left",
+            "right"
+        ]
 
-
-        for color in self.ghosts:
-
-            self.ghosts[color] = pygame.transform.scale(
-                self.ghosts[color],
-                (
-                    self.cell_size,
-                    self.cell_size
+        for color in colors:
+            self.ghosts[color] = {}
+            for direction in directions:
+                image = pygame.image.load(
+                    f"assets/ghosts/{color}_{direction}.png"
                 )
+
+                image = pygame.transform.scale(
+                    image,
+                    (
+                        self.cell_size,
+                        self.cell_size
+                    )
+                )
+
+                self.ghosts[color][direction.upper()] = image
+
+
+    def get_player(self, direction=None, mouth_open=False):
+        if mouth_open:
+            image = self.player_open
+        else:
+            image = self.player_close
+
+        if direction is None:
+            return image
+
+        if direction.name == "LEFT":
+            image = pygame.transform.rotate(
+                image,
+                180
+            )
+
+        elif direction.name == "UP":
+            image = pygame.transform.rotate(
+                image,
+                90
+            )
+
+        elif direction.name == "DOWN":
+            image = pygame.transform.rotate(
+                image,
+                -90
             )
 
 
+        return image
 
-    def get_player(self):
+    def get_ghost(self, color, direction):
 
-        return self.player
-
-
-
-    def get_ghost(self, color):
-
-        return self.ghosts.get(color)
+        return self.ghosts[color][direction]

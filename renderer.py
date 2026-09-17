@@ -1,6 +1,7 @@
 import pygame
 from sprite_manager import SpriteManager
 
+
 class Renderer:
     def __init__(self, width, height):
     
@@ -8,6 +9,7 @@ class Renderer:
         self.height = height
     
         self.screen = None
+
     
         self.cell_size = 45
     
@@ -25,11 +27,8 @@ class Renderer:
 
         self.player_color = (255, 255, 0)
 
-        self.ghost_colors = {
-           "red": (255, 0, 0),
-            "blue": (0, 0, 255)
-        }
-    
+
+        
         self.clock = None
         self.font = None
 
@@ -140,19 +139,17 @@ class Renderer:
 
     def draw_player(self, player):
 
-        print("SCREEN:", self.screen)
-        print("PLAYER IMAGE:", self.sprite_manager.get_player())
-
         row, col = player.position
 
-        x = col * self.cell_size
-        y = row * self.cell_size
+        x, y = player.pixel_position
 
         self.screen.blit(
-            self.sprite_manager.get_player(),
+            self.sprite_manager.get_player(
+                player.direction,
+                player.mouth_open
+            ),
             (x,y)
         )
-        print(self.sprite_manager.get_player().get_size())
 
     def draw_ghosts(self, ghosts):
     
@@ -161,12 +158,12 @@ class Renderer:
             row, col = ghost.position
     
     
-            x = col * self.cell_size
-            y = row * self.cell_size
+            x, y = ghost.pixel_position
     
     
             image = self.sprite_manager.get_ghost(
-                ghost.color
+                ghost.color,
+                ghost.direction
             )
     
     

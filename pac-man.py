@@ -82,7 +82,7 @@ class Game:
         # -----------------
 
         self.player = Player(
-            start_position=(1, 1),
+            start_position=self.maze.find_center_start(),
             lives=config.lives
         )
 
@@ -95,13 +95,21 @@ class Game:
         self.ghosts = [
 
             Ghost(
-                start_position=(5, 5),
-                color="red"
+                start_position=(0, 0),
+                color="blue"
             ),
 
             Ghost(
-                start_position=(5, 6),
-                color="blue"
+                start_position=(0, config.height - 1),
+                color="green"
+            ),
+            Ghost(
+                start_position=(config.width - 1, 0),
+                color="orange"
+            ),
+            Ghost(
+                start_position=(config.width - 1, config.height - 1),
+                color="purple"
             )
 
         ]
@@ -131,9 +139,6 @@ class Game:
 
 
         print("Game initialized successfully")
-
-
-
 
 
     def start(self):
@@ -197,7 +202,7 @@ class Game:
             self.maze
         )
 
-
+        self.player.update_pixel_position()
 
         self.ghost_move_timer += 1
 
@@ -209,17 +214,17 @@ class Game:
 
                 ghost.chase(
                     self.maze,
-                    self.player.position
+                    self.player.position,
+                    self.ghosts
                 )
 
+                ghost.update_pixel_position()
 
             self.ghost_move_timer = 0
 
 
 
         self.check_collision()
-
-
 
 
 

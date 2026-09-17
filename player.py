@@ -6,7 +6,13 @@ class Player:
         self.position = start_position
         self.lives = lives
         self.direction = None
-
+        self.mouth_open = None
+        self.cell_size = 45
+        self.pixel_position = [
+            start_position[1] * self.cell_size,
+            start_position[0] * self.cell_size
+        ]
+        self.speed = 5
         self.move_timer = 0
         self.move_delay = 8
 
@@ -64,3 +70,22 @@ class Player:
 
     def is_alive(self):
         return self.lives > 0
+
+    def update_pixel_position(self):
+
+        target_x = self.position[1] * self.cell_size
+        target_y = self.position[0] * self.cell_size
+    
+    
+        if self.pixel_position[0] < target_x:
+            self.pixel_position[0] += self.speed
+    
+        elif self.pixel_position[0] > target_x:
+            self.pixel_position[0] -= self.speed
+    
+    
+        if self.pixel_position[1] < target_y:
+            self.pixel_position[1] += self.speed
+    
+        elif self.pixel_position[1] > target_y:
+            self.pixel_position[1] -= self.speed
