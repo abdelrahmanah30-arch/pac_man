@@ -13,8 +13,10 @@ class Ghost:
             start_position[1] * self.cell_size,
             start_position[0] * self.cell_size
         ]
+        self.target_position = start_position
+        self.moving = False
 
-        self.speed = 5
+        self.speed = 3
 
         self.bfs = BFSSolver()
 
@@ -40,39 +42,60 @@ class Ghost:
         elif new_col > old_col:
             self.direction = "RIGHT"
 
-        self.position = new_position
+        self.target_position = new_position
+        self.moving = True
 
     def update_pixel_position(self):
 
-        target_x = self.position[1] * self.cell_size
-        target_y = self.position[0] * self.cell_size
+        target_x = self.target_position[1] * 45
+        target_y = self.target_position[0] * 45
 
 
-        if self.pixel_position[0] < target_x:
-            self.pixel_position[0] += self.speed
-
-        elif self.pixel_position[0] > target_x:
-            self.pixel_position[0] -= self.speed
+        dx = target_x - self.pixel_position[0]
+        dy = target_y - self.pixel_position[1]
 
 
-        if self.pixel_position[1] < target_y:
-            self.pixel_position[1] += self.speed
+        if abs(dx) <= self.speed:
+            self.pixel_position[0] = target_x
+        else:
+            self.pixel_position[0] += self.speed if dx > 0 else -self.speed
 
-        elif self.pixel_position[1] > target_y:
-            self.pixel_position[1] -= self.speed
+
+        if abs(dy) <= self.speed:
+            self.pixel_position[1] = target_y
+        else:
+            self.pixel_position[1] += self.speed if dy > 0 else -self.speed
+
+
+        if (
+            self.pixel_position[0] == target_x
+            and self.pixel_position[1] == target_y
+        ):
+            self.position = self.target_position
+            self.moving = False
 
     def chase(self, maze, player_position, ghosts):
 
-        path = self.bfs.find_path(
-            maze,
-            self.position,
-            player_position
-        )
+            path = self.bfs.find_path(
+                maze,
+                self.position,
+                player_position
+            )
 
-        if len(path) > 1:
-            self.move(path[1], maze, ghosts)
+            if len(path) > 1:
+                self.move(path[1], maze, ghosts)
 
     def reset_position(self):
+
         self.position = self.start_position
+
+        self.target_position = self.start_position
+
+        self.pixel_position = [
+            self.start_position[1] * self.cell_size,
+            self.start_position[0] * self.cell_size
+        ]
+
+        self.moving = False
 
         

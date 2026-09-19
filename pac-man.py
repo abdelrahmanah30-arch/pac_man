@@ -191,36 +191,43 @@ class Game:
 
     def update(self):
 
-
         if self.state != GameState.PLAYING:
-
             return
 
 
-
+        # Player
         self.player.move(
             self.maze
         )
 
         self.player.update_pixel_position()
 
+
+
+        # Ghost movement timer
         self.ghost_move_timer += 1
 
 
-        if self.ghost_move_timer >= 30:
-
+        if self.ghost_move_timer >= 5:
 
             for ghost in self.ghosts:
 
-                ghost.chase(
-                    self.maze,
-                    self.player.position,
-                    self.ghosts
-                )
+                if not ghost.moving:
 
-                ghost.update_pixel_position()
+                    ghost.chase(
+                        self.maze,
+                        self.player.position,
+                        self.ghosts
+                    )
 
             self.ghost_move_timer = 0
+
+
+
+        # Ghost smooth movement
+        for ghost in self.ghosts:
+
+            ghost.update_pixel_position()
 
 
 
@@ -254,19 +261,20 @@ class Game:
 
     def check_collision(self):
 
-
         for ghost in self.ghosts:
-
 
             if ghost.position == self.player.position:
 
                 print("Ghost caught Player")
-            
+
                 self.player.lose_life()
-            
+
+
                 for ghost in self.ghosts:
-                    ghost.position = ghost.start_position
-            
+
+                    ghost.reset_position()
+
+
                 break
 
 

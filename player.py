@@ -66,7 +66,17 @@ class Player:
             self.reset_position()
 
     def reset_position(self):
+
         self.position = self.start_position
+
+        self.target_position = self.start_position
+
+        self.pixel_position = [
+            self.start_position[1] * self.cell_size,
+            self.start_position[0] * self.cell_size
+        ]
+
+        self.moving = False
 
     def is_alive(self):
         return self.lives > 0
