@@ -12,16 +12,32 @@ class GumManager:
 
     def create_gums(self, maze):
 
+        super_positions = [
+            (1, 1),
+            (1, maze.width - 2),
+            (maze.height - 2, 1),
+            (maze.height - 2, maze.width - 2)
+        ]
+
+
         for row in range(maze.height):
 
             for col in range(maze.width):
 
+                position = (row, col)
+
                 if (
-                    maze.is_valid_position((row,col))
-                    and maze.get_open_neighbors((row,col))
+                    maze.is_valid_position(position)
+                    and maze.get_open_neighbors(position)
                 ):
 
-                    self.gums[(row,col)] = PacgumType.NORMAL
+                    if position in super_positions:
+
+                        self.gums[position] = PacgumType.SUPER
+
+                    else:
+
+                        self.gums[position] = PacgumType.NORMAL
 
 
     def eat_gum(self, position):

@@ -16,7 +16,7 @@ from input_handler import InputHandler
 from renderer import Renderer
 
 from gum_manager import GumManager
-from pacgum import PacgumType
+from level_manager import LevelManager
 
 
 class GameState:
@@ -25,7 +25,6 @@ class GameState:
     PLAYING = "PLAYING"
     GAME_OVER = "GAME_OVER"
     WIN = "WIN"
-
 
 
 class Game:
@@ -38,107 +37,43 @@ class Game:
         self.state = GameState.MENU
         self.running = True
 
-
-        # FPS control
-
         self.clock = pygame.time.Clock()
-
         self.ghost_move_timer = 0
 
 
-        # -----------------
-        # Input Handler
-        # -----------------
+        self.level_manager = LevelManager(
+            config
+        )
+
 
         self.input_handler = InputHandler()
 
 
+        # Create first level
 
-        # -----------------
-        # Create Maze
-        # -----------------
+        self.setup_level()
 
-        self.maze = MazeManager(
-            config.width,
-            config.height,
-            config.seed
-        )
 
-        
-
-        #-----------------
-        # PacGums
-        #-----------------
-
-        self.gum_manager = GumManager(
-            self.maze
-        )
-
-        # -----------------
         # Renderer
-        # -----------------
+
+        size = self.level_manager.get_maze_size()
 
         self.renderer = Renderer(
-            config.width,
-            config.height
+            size,
+            size
         )
 
         self.renderer.initialize()
 
 
-
-        # -----------------
-        # Create Player
-        # -----------------
-
-        self.player = Player(
-            start_position=self.maze.find_center_start(),
-            lives=config.lives
-        )
-
-
-
-        # -----------------
-        # Create Ghosts
-        # -----------------
-
-        self.ghosts = [
-
-            Ghost(
-                start_position=(0, 0),
-                color="blue"
-            ),
-
-            Ghost(
-                start_position=(0, config.height - 1),
-                color="green"
-            ),
-            Ghost(
-                start_position=(config.width - 1, 0),
-                color="orange"
-            ),
-            Ghost(
-                start_position=(config.width - 1, config.height - 1),
-                color="purple"
-            )
-
-        ]
-
-
-
-        # -----------------
-        # Score System
-        # -----------------
+        # Score
 
         self.score_manager = ScoreManager(
             config
         )
 
 
-
-        # -----------------
-        # High Score
-        # -----------------
+        # High score
 
         self.high_score = HighScoreManager(
             config.highscore_filename
@@ -147,14 +82,93 @@ class Game:
         self.high_score.load()
 
 
-
         print("Game initialized successfully")
 
 
+
+    # -------------------------
+    # Level Setup
+    # -------------------------
+
+    def setup_level(self):
+
+        size = self.create_maze()
+
+
+        self.gum_manager = GumManager(
+            self.maze
+        )
+
+
+        self.player = Player(
+            start_position=self.maze.find_center_start(),
+            lives=self.config.lives
+        )
+
+
+        self.ghosts = self.create_ghosts(
+            size
+        )
+
+
+        self.ghost_move_timer = 0
+
+
+
+    def create_maze(self):
+
+        size = self.level_manager.get_maze_size()
+
+        seed = self.level_manager.get_seed()
+
+
+        self.maze = MazeManager(
+            size,
+            size,
+            seed
+        )
+
+
+        return size
+
+
+
+    def create_ghosts(self, size):
+
+        return [
+
+            Ghost(
+                start_position=(0,0),
+                color="blue"
+            ),
+
+            Ghost(
+                start_position=(0,size-1),
+                color="green"
+            ),
+
+            Ghost(
+                start_position=(size-1,0),
+                color="orange"
+            ),
+
+            Ghost(
+                start_position=(size-1,size-1),
+                color="purple"
+            )
+
+        ]
+
+
+
+    # -------------------------
+    # Game Loop
+    # -------------------------
+
     def start(self):
-        
 
         self.state = GameState.PLAYING
+
 
         print("Game started")
 
@@ -162,11 +176,18 @@ class Game:
         while self.running:
 
 
-
             if not self.input_handler.handle_input():
 
                 self.running = False
                 break
+
+
+
+            if self.input_handler.get_next_level():
+
+                self.next_level()
+
+                continue
 
 
 
@@ -198,26 +219,68 @@ class Game:
 
 
 
+    # -------------------------
+    # Next Level
+    # -------------------------
 
+    def next_level(self):
+
+        if self.level_manager.get_level() >= 10:
+
+            self.state = GameState.WIN
+            print("Congratulations! You finished all levels.")
+            return
+
+
+
+        self.level_manager.next_level()
+
+
+        self.setup_level()
+        size = self.level_manager.get_maze_size()
+
+        self.renderer.update_size(
+            size,
+            size
+        )
+
+
+        self.state = GameState.PLAYING
+
+
+        print(
+            "Current Level:",
+            self.level_manager.get_level()
+        )
+
+
+
+
+    # -------------------------
+    # Update
+    # -------------------------
 
     def update(self):
 
         if self.state != GameState.PLAYING:
+
             return
 
 
-        # Player
+
         self.player.move(
             self.maze
         )
 
+
         self.player.update_pixel_position()
 
-        self.player.update_mouth()
+
 
         gum = self.gum_manager.eat_gum(
             self.player.get_pixel_cell()
         )
+
 
 
         if gum:
@@ -225,25 +288,26 @@ class Game:
             self.score_manager.add_pacgum_score(
                 gum
             )
+
             self.player.open_mouth()
-        
+
+
+
         if self.gum_manager.remaining() == 0:
 
             self.state = GameState.WIN
 
-        if gum == PacgumType.SUPER:
 
-            for ghost in self.ghosts:
-            
-                ghost.become_frightened()
 
-        # Ghost movement timer
         self.ghost_move_timer += 1
+
 
 
         if self.ghost_move_timer >= 2:
 
+
             for ghost in self.ghosts:
+
 
                 if not ghost.moving:
 
@@ -253,21 +317,29 @@ class Game:
                         self.ghosts
                     )
 
+
             self.ghost_move_timer = 0
 
 
 
-        # Ghost smooth movement
+
         for ghost in self.ghosts:
 
             ghost.update_pixel_position()
 
 
 
-        self.check_collision()
         self.player.update_mouth()
 
 
+        self.check_collision()
+
+
+
+
+    # -------------------------
+    # Render
+    # -------------------------
 
     def render(self):
 
@@ -276,9 +348,11 @@ class Game:
 
         if self.state == GameState.PLAYING:
 
+
             self.renderer.draw_maze(
                 self.maze.maze
             )
+
 
             self.renderer.draw_gums(
                 self.gum_manager.gums
@@ -298,8 +372,9 @@ class Game:
             self.renderer.draw_hud(
                 self.score_manager.get_score(),
                 self.player.lives,
-                1
+                self.level_manager.get_level()
             )
+
 
 
         elif self.state == GameState.WIN:
@@ -307,9 +382,11 @@ class Game:
             self.renderer.draw_win()
 
 
+
         elif self.state == GameState.GAME_OVER:
 
             self.renderer.draw_game_over()
+
 
 
         self.renderer.update()
@@ -317,16 +394,20 @@ class Game:
 
 
 
+    # -------------------------
+    # Collision
+    # -------------------------
 
     def check_collision(self):
 
         for ghost in self.ghosts:
 
+
             if ghost.position == self.player.position:
 
 
                 if ghost.state == "FRIGHTENED":
-                
+
                     self.score_manager.score += 200
 
                     ghost.reset_position()
@@ -334,12 +415,16 @@ class Game:
                     ghost.become_normal()
 
 
+
                 else:
-                
+
                     self.player.lose_life()
 
+
                     for ghost in self.ghosts:
+
                         ghost.reset_position()
+
 
 
                 break
@@ -347,9 +432,7 @@ class Game:
 
 
 
-
     def check_game_state(self):
-
 
         if not self.player.is_alive():
 
@@ -358,41 +441,28 @@ class Game:
 
 
 
-
     def game_over(self):
-
 
         self.state = GameState.GAME_OVER
 
 
-        current_score = self.score_manager.get_score()
-
+        score = self.score_manager.get_score()
 
 
         self.high_score.update(
-            current_score
+            score
         )
 
 
-
-        print("\nGAME OVER")
-
-        print(
-            "Score:",
-            current_score
-        )
-
-
+        print("GAME OVER")
+        print("Score:", score)
         print(
             "High Score:",
             self.high_score.get_highscore()
         )
 
 
-
         self.running = False
-
-
 
 
 
@@ -408,7 +478,6 @@ def main():
         )
 
         return 1
-
 
 
 
@@ -428,7 +497,6 @@ def main():
 
 
 
-
     if not config_path.exists():
 
         print(
@@ -439,9 +507,7 @@ def main():
 
 
 
-
     try:
-
 
         loader = Configloader(
             config_path
@@ -449,7 +515,6 @@ def main():
 
 
         config_data = loader.load()
-
 
 
         validator = ConfigValidator(
@@ -460,17 +525,14 @@ def main():
         validator.validate()
 
 
-
         game_config = GameConfig(
             validator
         )
 
 
-
         print(
             "Configuration loaded successfully"
         )
-
 
 
         game = Game(
@@ -484,7 +546,6 @@ def main():
 
     except Exception as error:
 
-
         print(
             "Error:",
             error
@@ -494,9 +555,7 @@ def main():
 
 
 
-
     return 0
-
 
 
 

@@ -19,7 +19,7 @@
                             # welcome in the my zone
 
     "width": "abd",
-    "height": 30,
+    "height": 15,
 
     "lives": 3,
 
@@ -30,7 +30,7 @@
     "points_per_ghost": 200,
 # welcome in the my zone
 
-    "seed": 42,
+    "seed": -1,
 
     "level_max_time": 90
 }
