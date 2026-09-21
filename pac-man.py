@@ -15,6 +15,8 @@ from high_score import HighScoreManager
 from input_handler import InputHandler
 from renderer import Renderer
 
+from gum_manager import GumManager
+from pacgum import PacgumType
 
 
 class GameState:
@@ -62,7 +64,15 @@ class Game:
             config.seed
         )
 
+        
 
+        #-----------------
+        # PacGums
+        #-----------------
+
+        self.gum_manager = GumManager(
+            self.maze
+        )
 
         # -----------------
         # Renderer
@@ -142,6 +152,7 @@ class Game:
 
 
     def start(self):
+        
 
         self.state = GameState.PLAYING
 
@@ -202,13 +213,35 @@ class Game:
 
         self.player.update_pixel_position()
 
+        self.player.update_mouth()
 
+        gum = self.gum_manager.eat_gum(
+            self.player.get_pixel_cell()
+        )
+
+
+        if gum:
+
+            self.score_manager.add_pacgum_score(
+                gum
+            )
+            self.player.open_mouth()
+        
+        if self.gum_manager.remaining() == 0:
+
+            self.state = GameState.WIN
+
+        if gum == PacgumType.SUPER:
+
+            for ghost in self.ghosts:
+            
+                ghost.become_frightened()
 
         # Ghost movement timer
         self.ghost_move_timer += 1
 
 
-        if self.ghost_move_timer >= 5:
+        if self.ghost_move_timer >= 2:
 
             for ghost in self.ghosts:
 
@@ -232,6 +265,7 @@ class Game:
 
 
         self.check_collision()
+        self.player.update_mouth()
 
 
 
@@ -240,18 +274,43 @@ class Game:
         self.renderer.clear()
 
 
-        self.renderer.draw_maze(
-            self.maze.maze
-        )
+        if self.state == GameState.PLAYING:
+
+            self.renderer.draw_maze(
+                self.maze.maze
+            )
+
+            self.renderer.draw_gums(
+                self.gum_manager.gums
+            )
 
 
-        self.renderer.draw_player(
-            self.player
-        )
+            self.renderer.draw_player(
+                self.player
+            )
 
-        self.renderer.draw_ghosts(
-            self.ghosts
-        )
+
+            self.renderer.draw_ghosts(
+                self.ghosts
+            )
+
+
+            self.renderer.draw_hud(
+                self.score_manager.get_score(),
+                self.player.lives,
+                1
+            )
+
+
+        elif self.state == GameState.WIN:
+
+            self.renderer.draw_win()
+
+
+        elif self.state == GameState.GAME_OVER:
+
+            self.renderer.draw_game_over()
+
 
         self.renderer.update()
 
@@ -265,14 +324,22 @@ class Game:
 
             if ghost.position == self.player.position:
 
-                print("Ghost caught Player")
 
-                self.player.lose_life()
-
-
-                for ghost in self.ghosts:
+                if ghost.state == "FRIGHTENED":
+                
+                    self.score_manager.score += 200
 
                     ghost.reset_position()
+
+                    ghost.become_normal()
+
+
+                else:
+                
+                    self.player.lose_life()
+
+                    for ghost in self.ghosts:
+                        ghost.reset_position()
 
 
                 break

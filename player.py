@@ -6,7 +6,8 @@ class Player:
         self.position = start_position
         self.lives = lives
         self.direction = None
-        self.mouth_open = None
+        self.mouth_open = False
+        self.mouth_timer = 0
         self.cell_size = 45
         self.pixel_position = [
             start_position[1] * self.cell_size,
@@ -99,3 +100,54 @@ class Player:
     
         elif self.pixel_position[1] > target_y:
             self.pixel_position[1] -= self.speed
+
+    def update_mouth(self):
+
+        self.mouth_timer += 1
+
+        if self.mouth_timer >= 10:
+
+            self.mouth_open = not self.mouth_open
+
+            self.mouth_timer = 0
+
+    def open_mouth(self):
+
+        self.mouth_open = True
+        self.mouth_timer = 5
+
+
+    def update_mouth(self):
+
+        if self.mouth_timer > 0:
+
+            self.mouth_timer -= 1
+
+        else:
+
+            self.mouth_open = False
+
+    def get_pixel_cell(self):
+
+        col = round(
+            self.pixel_position[0] / self.cell_size
+        )
+
+        row = round(
+            self.pixel_position[1] / self.cell_size
+        )
+
+        return (row, col)
+
+    def draw_lives(self, lives):
+    
+        text = self.font.render(
+            f"Lives: {lives}",
+            True,
+            (255,255,255)
+        )
+    
+        self.screen.blit(
+            text,
+            (10,40)
+        )

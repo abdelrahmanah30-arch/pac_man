@@ -93,3 +93,22 @@ class MazeManager:
 
 
         return True
+    def get_open_neighbors(self, position):
+
+        row, col = position
+    
+        directions = [
+            Direction.UP,
+            Direction.RIGHT,
+            Direction.DOWN,
+            Direction.LEFT
+        ]
+    
+        count = 0
+    
+        for direction in directions:
+        
+            if self.is_valid_position(position, direction):
+                count += 1
+    
+        return count

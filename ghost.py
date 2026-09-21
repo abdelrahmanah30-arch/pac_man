@@ -16,9 +16,10 @@ class Ghost:
         self.target_position = start_position
         self.moving = False
 
-        self.speed = 3
+        self.speed = 2
 
         self.bfs = BFSSolver()
+        self.state = "NORMAL"
 
     def move(self, new_position, maze, ghosts):
         if not maze.is_valid_position(new_position):
@@ -26,10 +27,16 @@ class Ghost:
 
         for ghost in ghosts:
             if ghost != self:
-                if ghost.position == new_position:
+                if ghost.target_position == new_position:
                     print("Blocked: ghost already there")
                     return
 
+                if (
+                    ghost.position == new_position
+                    and ghost.target_position == self.position
+                ):
+                    print("Blocked: ghost swap")
+                    return
         old_row, old_col = self.position
         new_row, new_col = new_position
 
@@ -98,4 +105,12 @@ class Ghost:
 
         self.moving = False
 
-        
+    def become_frightened(self):
+    
+        self.state = "FRIGHTENED"
+    
+    
+    
+    def become_normal(self):
+    
+        self.state = "NORMAL"
