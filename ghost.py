@@ -83,14 +83,31 @@ class Ghost:
 
     def chase(self, maze, player_position, ghosts):
 
-            path = self.bfs.find_path(
+        if self.state == "FRIGHTENED":
+
+            self.run_away(
                 maze,
-                self.position,
-                player_position
+                player_position,
+                ghosts
             )
 
-            if len(path) > 1:
-                self.move(path[1], maze, ghosts)
+            return
+
+
+        path = self.bfs.find_path(
+            maze,
+            self.position,
+            player_position
+        )
+
+
+        if len(path) > 1:
+
+            self.move(
+                path[1],
+                maze,
+                ghosts
+            )
 
     def reset_position(self):
 
@@ -114,3 +131,74 @@ class Ghost:
     def become_normal(self):
     
         self.state = "NORMAL"
+
+    def run_away(self, maze, player_position, ghosts):
+    
+        row, col = self.position
+    
+        neighbors = [
+        
+            (row - 1, col),   # UP
+            (row + 1, col),   # DOWN
+            (row, col - 1),   # LEFT
+            (row, col + 1)    # RIGHT
+    
+        ]
+    
+    
+        valid_neighbors = []
+    
+    
+        for position in neighbors:
+        
+            if maze.is_valid_position(position):
+            
+                valid_neighbors.append(position)
+    
+    
+    
+        if not valid_neighbors:
+        
+            return
+    
+    
+    
+        best_position = self.position
+    
+        max_distance = -1
+    
+    
+    
+        for position in valid_neighbors:
+        
+            distance = (
+                abs(position[0] - player_position[0])
+                +
+                abs(position[1] - player_position[1])
+            )
+    
+    
+            if distance > max_distance:
+            
+                max_distance = distance
+                best_position = position
+    
+    
+    
+        self.move(
+            best_position,
+            maze,
+            ghosts
+        )
+
+    def get_pixel_cell(self):
+
+        col = round(
+            self.pixel_position[0] / self.cell_size
+        )
+
+        row = round(
+            self.pixel_position[1] / self.cell_size
+        )
+
+        return (row, col)

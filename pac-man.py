@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 import pygame
+from pacgum import PacgumType
 
 from config_loader import Configloader, ConfigValidator
 from game_config import GameConfig
@@ -284,12 +285,19 @@ class Game:
 
 
         if gum:
-
+        
             self.score_manager.add_pacgum_score(
                 gum
             )
 
             self.player.open_mouth()
+
+
+            if gum == PacgumType.SUPER:
+            
+                for ghost in self.ghosts:
+                
+                    ghost.become_frightened()
 
 
 
@@ -403,7 +411,7 @@ class Game:
         for ghost in self.ghosts:
 
 
-            if ghost.position == self.player.position:
+            if ghost.get_pixel_cell() == self.player.get_pixel_cell():
 
 
                 if ghost.state == "FRIGHTENED":
