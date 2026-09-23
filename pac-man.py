@@ -40,6 +40,7 @@ class Game:
 
         self.clock = pygame.time.Clock()
         self.ghost_move_timer = 0
+        self.frightened_timer = 0
 
 
         self.level_manager = LevelManager(
@@ -57,11 +58,11 @@ class Game:
 
         # Renderer
 
-        size = self.level_manager.get_maze_size()
+        width, height = self.level_manager.get_maze_size()
 
         self.renderer = Renderer(
-            size,
-            size
+            width,
+            height
         )
 
         self.renderer.initialize()
@@ -93,7 +94,7 @@ class Game:
 
     def setup_level(self):
 
-        size = self.create_maze()
+        width, height = self.create_maze()
 
 
         self.gum_manager = GumManager(
@@ -108,7 +109,8 @@ class Game:
 
 
         self.ghosts = self.create_ghosts(
-            size
+            width,
+            height
         )
 
 
@@ -118,45 +120,34 @@ class Game:
 
     def create_maze(self):
 
-        size = self.level_manager.get_maze_size()
+        width, height = self.level_manager.get_maze_size()
 
         seed = self.level_manager.get_seed()
 
 
         self.maze = MazeManager(
-            size,
-            size,
+            width,
+            height,
             seed
         )
 
 
-        return size
+
+        return width, height
 
 
 
-    def create_ghosts(self, size):
+    def create_ghosts(self, width, height):
 
         return [
 
-            Ghost(
-                start_position=(0,0),
-                color="blue"
-            ),
+            Ghost((0,0), "blue"),
 
-            Ghost(
-                start_position=(0,size-1),
-                color="green"
-            ),
+            Ghost((0,width-1), "green"),
 
-            Ghost(
-                start_position=(size-1,0),
-                color="orange"
-            ),
+            Ghost((height-1,0), "orange"),
 
-            Ghost(
-                start_position=(size-1,size-1),
-                color="purple"
-            )
+            Ghost((height-1,width-1), "purple")
 
         ]
 
@@ -238,11 +229,11 @@ class Game:
 
 
         self.setup_level()
-        size = self.level_manager.get_maze_size()
+        width, height = self.level_manager.get_maze_size()
 
         self.renderer.update_size(
-            size,
-            size
+            width,
+            height
         )
 
 
@@ -293,17 +284,30 @@ class Game:
             self.player.open_mouth()
 
 
-            if gum == PacgumType.SUPER:
+        if gum == PacgumType.SUPER:
+        
+            for ghost in self.ghosts:
             
-                for ghost in self.ghosts:
-                
-                    ghost.become_frightened()
+                ghost.become_frightened()
+        
+        
+            self.frightened_timer = 500
 
 
 
         if self.gum_manager.remaining() == 0:
 
             self.state = GameState.WIN
+
+        if self.frightened_timer > 0:
+        
+            self.frightened_timer -= 1
+        
+            if self.frightened_timer == 0:
+            
+                for ghost in self.ghosts:
+                
+                    ghost.become_normal()
 
 
 
@@ -410,33 +414,24 @@ class Game:
 
         for ghost in self.ghosts:
 
-
             if ghost.get_pixel_cell() == self.player.get_pixel_cell():
 
 
-                if ghost.state == "FRIGHTENED":
+                if self.frightened_timer > 0:
 
                     self.score_manager.score += 200
 
                     ghost.reset_position()
 
-                    ghost.become_normal()
-
-
-
                 else:
 
                     self.player.lose_life()
-
 
                     for ghost in self.ghosts:
 
                         ghost.reset_position()
 
-
-
                 break
-
 
 
 

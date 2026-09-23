@@ -36,22 +36,37 @@ class MazeManager:
         center_col = self.width // 2
 
 
-        positions = [
-            (center_row + 2, center_col),
-            (center_row + 2, center_col - 1),
-            (center_row + 2, center_col + 1),
-            (center_row + 3, center_col),
-            (center_row + 1, center_col)
-        ]
+        positions = []
+
+
+        for radius in range(max(self.width, self.height)):
+
+            for row in range(
+                center_row - radius,
+                center_row + radius + 1
+            ):
+
+                for col in range(
+                    center_col - radius,
+                    center_col + radius + 1
+                ):
+
+                    positions.append(
+                        (row, col)
+                    )
 
 
         for position in positions:
 
-            if self.is_valid_position(position):
+            if (
+                self.is_valid_position(position)
+                and self.get_open_neighbors(position) > 0
+            ):
+
                 return position
 
 
-        return (1,1)
+        return (1, 1)
 
     def is_valid_position(self, position, direction=None):
 

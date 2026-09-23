@@ -1,4 +1,5 @@
 from bfs_solver import BFSSolver
+from direction import Direction
 
 class Ghost:
 
@@ -120,71 +121,63 @@ class Ghost:
             self.start_position[0] * self.cell_size
         ]
 
+        self.direction = "DOWN"
+
         self.moving = False
+
+  
 
     def become_frightened(self):
     
         self.state = "FRIGHTENED"
+        print("Ghost frightened")
     
     
     
     def become_normal(self):
-    
+        
         self.state = "NORMAL"
 
     def run_away(self, maze, player_position, ghosts):
-    
+
         row, col = self.position
-    
-        neighbors = [
-        
-            (row - 1, col),   # UP
-            (row + 1, col),   # DOWN
-            (row, col - 1),   # LEFT
-            (row, col + 1)    # RIGHT
-    
+
+
+        moves = [
+            ((row - 1, col), Direction.UP),
+            ((row + 1, col), Direction.DOWN),
+            ((row, col - 1), Direction.LEFT),
+            ((row, col + 1), Direction.RIGHT)
         ]
-    
-    
-        valid_neighbors = []
-    
-    
-        for position in neighbors:
-        
-            if maze.is_valid_position(position):
-            
-                valid_neighbors.append(position)
-    
-    
-    
-        if not valid_neighbors:
-        
-            return
-    
-    
-    
+
+
         best_position = self.position
-    
         max_distance = -1
-    
-    
-    
-        for position in valid_neighbors:
-        
+
+
+        for position, direction in moves:
+
+            if not maze.is_valid_position(
+                self.position,
+                direction
+            ):
+                continue
+
+
             distance = (
                 abs(position[0] - player_position[0])
                 +
                 abs(position[1] - player_position[1])
             )
-    
-    
+
+
             if distance > max_distance:
-            
+
                 max_distance = distance
                 best_position = position
-    
-    
-    
+
+
+
         self.move(
             best_position,
             maze,
