@@ -38,6 +38,7 @@ class Game:
         self.state = GameState.MENU
         self.running = True
 
+
         self.clock = pygame.time.Clock()
         self.ghost_move_timer = 0
         self.frightened_timer = 0
@@ -96,22 +97,22 @@ class Game:
 
         width, height = self.create_maze()
 
-
-        self.gum_manager = GumManager(
-            self.maze
-        )
-
+        player_start = self.maze.find_center_start()
 
         self.player = Player(
-            start_position=self.maze.find_center_start(),
+            start_position=player_start,
             lives=self.config.lives
         )
 
+        self.ghosts = self.create_ghosts()
 
-        self.ghosts = self.create_ghosts(
-            width,
-            height
+        self.gum_manager = GumManager(
+            self.maze,
+            self.player.start_position,
+            self.ghosts
         )
+
+
 
 
         self.ghost_move_timer = 0
@@ -137,19 +138,36 @@ class Game:
 
 
 
-    def create_ghosts(self, width, height):
+    def create_ghosts(self):
 
-        return [
+        positions = self.maze.find_ghost_positions(4)
 
-            Ghost((0,0), "blue"),
 
-            Ghost((0,width-1), "green"),
-
-            Ghost((height-1,0), "orange"),
-
-            Ghost((height-1,width-1), "purple")
-
+        colors = [
+            "blue",
+            "green",
+            "orange",
+            "purple"
         ]
+
+
+        ghosts = []
+
+
+        for position, color in zip(
+            positions,
+            colors
+        ):
+
+            ghosts.append(
+                Ghost(
+                    start_position=position,
+                    color=color
+                )
+            )
+
+
+        return ghosts
 
 
 
@@ -339,6 +357,10 @@ class Game:
 
             ghost.update_pixel_position()
 
+        for ghost in self.ghosts:
+            
+            ghost.update()
+
 
 
         self.player.update_mouth()
@@ -414,14 +436,23 @@ class Game:
 
         for ghost in self.ghosts:
 
+
+            if ghost.state in ["EATEN", "WAITING"]:
+                continue
+
             if ghost.get_pixel_cell() == self.player.get_pixel_cell():
 
 
-                if self.frightened_timer > 0:
+                if ghost.state == "FRIGHTENED":
 
                     self.score_manager.score += 200
 
-                    ghost.reset_position()
+                    ghost.become_eaten()
+                    
+                    break
+                
+                elif ghost.state == "EATEN":
+                    break 
 
                 else:
 
@@ -431,7 +462,7 @@ class Game:
 
                         ghost.reset_position()
 
-                break
+                    break
 
 
 

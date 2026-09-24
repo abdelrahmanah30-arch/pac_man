@@ -216,9 +216,10 @@ class Renderer:
 
 
             image = self.sprite_manager.get_ghost(
-                ghost.color,
-                ghost.direction
-            )
+            ghost.color,
+            ghost.direction,
+            ghost.state
+        )
 
 
             if image:
