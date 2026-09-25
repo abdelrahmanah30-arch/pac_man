@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 import pygame
 from pacgum import PacgumType
+from ghost_manager import GhostManager
 
 from config_loader import Configloader, ConfigValidator
 from game_config import GameConfig
@@ -42,6 +43,8 @@ class Game:
         self.clock = pygame.time.Clock()
         self.ghost_move_timer = 0
         self.frightened_timer = 0
+        self.frightened_update_timer = 0
+        self.ghost_manager = GhostManager()
 
 
         self.level_manager = LevelManager(
@@ -154,17 +157,18 @@ class Game:
         ghosts = []
 
 
-        for position, color in zip(
-            positions,
-            colors
+        for index, (position, color) in enumerate(
+            zip(positions, colors)
         ):
 
-            ghosts.append(
-                Ghost(
-                    start_position=position,
-                    color=color
-                )
+            ghost = Ghost(
+                start_position=position,
+                color=color
             )
+
+            ghost.escape_offset = index
+
+            ghosts.append(ghost)
 
 
         return ghosts
@@ -308,8 +312,9 @@ class Game:
             
                 ghost.become_frightened()
         
-        
-            self.frightened_timer = 500
+            self.update_frightened_targets()
+            self.frightened_update_timer = 120
+            self.frightened_timer = 900
 
 
 
@@ -319,13 +324,13 @@ class Game:
 
         if self.frightened_timer > 0:
         
-            self.frightened_timer -= 1
+            self.frightened_update_timer -= 1
         
-            if self.frightened_timer == 0:
+            if self.frightened_update_timer <= 0:
             
-                for ghost in self.ghosts:
+                self.update_frightened_targets()
                 
-                    ghost.become_normal()
+                self.frightened_update_timer = 120
 
 
 
@@ -369,7 +374,24 @@ class Game:
         self.check_collision()
 
 
-
+    def update_frightened_targets(self):
+    
+        frightened_ghosts = [
+            ghost for ghost in self.ghosts
+            if ghost.state == "FRIGHTENED"
+        ]
+    
+    
+        if not frightened_ghosts:
+        
+            return
+    
+    
+        self.ghost_manager.update_frightened_targets(
+            frightened_ghosts,
+            self.maze,
+            self.player.position
+        )
 
     # -------------------------
     # Render
@@ -590,7 +612,6 @@ def main():
 
 
     return 0
-
 
 
 

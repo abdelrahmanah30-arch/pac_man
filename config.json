@@ -1,35 +1,20 @@
-   # welcome in the my zone
 {
     "highscore_filename": "data/highscores.json",
-
     "level": [
-        "1",
-        "2",
-        "3",
-        "5",
-        "6",
-        -4,
-        "abd",
-        7,
-        8,
-        9,
-        10,
-        18
+        {
+            "width": 15,
+            "height": 15
+        }
     ],
-                            # welcome in the my zone
-
-    "width": "abd",
-    "height": 15,
-
+ 
     "lives": 3,
-
+ 
     "pacgum": 42,
-
+ 
     "points_per_pacgum": 10,
     "points_per_super_pacgum": 50,
     "points_per_ghost": 200,
-# welcome in the my zone
-
+ 
     "seed": 42,
     "level_max_time": 90
 }

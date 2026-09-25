@@ -1,159 +1,84 @@
 from collections import deque
-
+from typing import Deque, Dict, List, Tuple
+ 
 from direction import Direction
-
-
-
+from maze_manager import MazeManager
+ 
+Position = Tuple[int, int]
+ 
+ 
 class BFSSolver:
-
-
-    def __init__(self):
-        pass
-
-
-
-    def find_path(self, maze, start, goal):
+    """Finds the shortest path between two cells of a maze using BFS."""
+ 
+    def find_path(
+        self,
+        maze: MazeManager,
+        start: Position,
+        goal: Position,
+    ) -> List[Position]:
+        """Return the shortest path from start to goal.
+ 
+        Args:
+            maze: The maze to search in.
+            start: Starting (row, col) position.
+            goal: Target (row, col) position.
+ 
+        Returns:
+            The list of positions from start to goal (inclusive), in
+            order. Returns an empty list if no path exists.
         """
-        Find shortest path from start to goal using BFS
-
-        start = (row, col)
-        goal  = (row, col)
-
-        return:
-            list of positions
-        """
-
-
-        queue = deque()
-
-        visited = set()
-
-        parent = {}
-
-
-        queue.append(start)
-
-        visited.add(start)
-
-
-
+        queue: Deque[Position] = deque([start])
+        visited: set[Position] = {start}
+        parent: Dict[Position, Position] = {}
+ 
         while queue:
-
-
             current = queue.popleft()
-
-
+ 
             if current == goal:
-
-                return self.reconstruct_path(
-                    parent,
-                    start,
-                    goal
-                )
-
-
-
-            for neighbor in self.get_neighbors(
-                maze,
-                current
-            ):
-
-
+                return self._reconstruct_path(parent, start, goal)
+ 
+            for neighbor in self._get_neighbors(maze, current):
                 if neighbor not in visited:
-
-
                     visited.add(neighbor)
-
                     parent[neighbor] = current
-
                     queue.append(neighbor)
-
-
-
+ 
         return []
-
-
-
-
-
-    def get_neighbors(self, maze, position):
-
-
+ 
+    def _get_neighbors(
+        self,
+        maze: MazeManager,
+        position: Position,
+    ) -> List[Position]:
+        """Return every cell reachable from position in one step."""
         row, col = position
-
-
-        neighbors = [
-
-            (
-                (row - 1, col),
-                Direction.UP
-            ),
-
-            (
-                (row + 1, col),
-                Direction.DOWN
-            ),
-
-            (
-                (row, col - 1),
-                Direction.LEFT
-            ),
-
-            (
-                (row, col + 1),
-                Direction.RIGHT
-            )
-
+        candidates = [
+            ((row - 1, col), Direction.UP),
+            ((row + 1, col), Direction.DOWN),
+            ((row, col - 1), Direction.LEFT),
+            ((row, col + 1), Direction.RIGHT),
         ]
-
-
-
-        valid_neighbors = []
-
-
-
-        for cell, direction in neighbors:
-
-
-            if maze.is_valid_position(
-                position,
-                direction
-            ):
-
-                valid_neighbors.append(
-                    cell
-                )
-
-
-
-        return valid_neighbors
-
-
-
-
-
-    def reconstruct_path(self, parent, start, goal):
-
-
-        path = []
-
+ 
+        return [
+            cell
+            for cell, direction in candidates
+            if maze.is_valid_position(position, direction)
+        ]
+ 
+    def _reconstruct_path(
+        self,
+        parent: Dict[Position, Position],
+        start: Position,
+        goal: Position,
+    ) -> List[Position]:
+        """Walk the parent chain from goal back to start and reverse it."""
+        path = [goal]
         current = goal
-
-
-
+ 
         while current != start:
-
-
-            path.append(current)
-
             current = parent[current]
-
-
-
-        path.append(start)
-
-
+            path.append(current)
+ 
         path.reverse()
-
-
         return path
+ 
