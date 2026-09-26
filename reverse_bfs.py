@@ -1,82 +1,39 @@
 from collections import deque
-from direction import Direction
-
-
+from typing import Deque, Dict
+ 
+from constants import Position
+from maze_manager import MazeManager
+ 
+ 
 class ReverseBFSSolver:
-
-    def calculate_distances(self, maze, start):
-
-        queue = deque()
-
-        distances = {}
-
-        queue.append(start)
-        distances[start] = 0
-
-
+    """Computes BFS distances from one cell to every reachable cell."""
+ 
+    def calculate_distances(
+        self,
+        maze: MazeManager,
+        start: Position,
+    ) -> Dict[Position, int]:
+        """Return every reachable cell's distance from start.
+ 
+        Args:
+            maze: The maze to search in.
+            start: The (row, col) cell to measure distances from.
+ 
+        Returns:
+            A mapping of every reachable position to its distance
+            from start, in steps. Always includes start itself (at
+            distance 0).
+        """
+        queue: Deque[Position] = deque([start])
+        distances: Dict[Position, int] = {start: 0}
+ 
         while queue:
-
             current = queue.popleft()
-
-            for neighbor in self.get_neighbors(
-                maze,
-                current
-            ):
-
+ 
+            for neighbor in maze.get_neighbor_cells(current):
                 if neighbor not in distances:
-
-                    distances[neighbor] = (
-                        distances[current] + 1
-                    )
-
+                    distances[neighbor] = distances[current] + 1
                     queue.append(neighbor)
-
-
+ 
         return distances
-
-
-
-    def get_neighbors(self, maze, position):
-
-        row, col = position
-
-
-        neighbors = [
-
-            (
-                (row - 1, col),
-                Direction.UP
-            ),
-
-            (
-                (row + 1, col),
-                Direction.DOWN
-            ),
-
-            (
-                (row, col - 1),
-                Direction.LEFT
-            ),
-
-            (
-                (row, col + 1),
-                Direction.RIGHT
-            )
-
-        ]
-
-
-        valid_neighbors = []
-
-
-        for cell, direction in neighbors:
-
-            if maze.is_valid_position(
-                position,
-                direction
-            ):
-
-                valid_neighbors.append(cell)
-
-
-        return valid_neighbors
+ 

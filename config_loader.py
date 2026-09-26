@@ -175,7 +175,7 @@ class ConfigValidator:
         self._validate_int(
             "points_per_ghost", DEFAULTS["points_per_ghost"], minimum=0
         )
-        self._validate_int("seed", DEFAULTS["seed"], minimum=0)
+        self._validate_int("seed", DEFAULTS["seed"])
         self._validate_int(
             "level_max_time", DEFAULTS["level_max_time"], minimum=1
         )
