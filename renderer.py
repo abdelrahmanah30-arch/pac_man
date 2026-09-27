@@ -164,6 +164,10 @@ class Renderer:
     ) -> None:
         """Draw the score, level, lives, and time-remaining bar.
  
+        Labels are spaced evenly across the actual window width, so
+        they stay fully visible (never clipped past the edge) on
+        narrow mazes and don't bunch up on wide ones.
+ 
         Args:
             score: The current score.
             lives: Remaining lives.
@@ -171,14 +175,19 @@ class Renderer:
             time_remaining: Seconds left before the level times out.
         """
         labels = [
-            (f"Score: {score}", 20),
-            (f"Level: {level}", 250),
-            (f"Lives: {lives}", 450),
-            (f"Time: {max(time_remaining, 0)}", 650),
+            f"Score: {score}",
+            f"Level: {level}",
+            f"Lives: {lives}",
+            f"Time: {max(time_remaining, 0)}",
         ]
  
-        for text, x in labels:
+        margin = 20
+        usable_width = max(self.screen_width - 2 * margin, 0)
+        spacing = usable_width / len(labels)
+ 
+        for index, text in enumerate(labels):
             surface = self.font.render(text, True, WHITE)
+            x = margin + int(index * spacing)
             self.screen.blit(surface, (x, 20))
  
     def draw_menu(self, top_scores: List[HighScoreEntry]) -> None:

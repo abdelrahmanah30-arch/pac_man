@@ -21,7 +21,7 @@ from score_manager import ScoreManager
  
 FPS = 60
 FRIGHTENED_DURATION_TICKS = 900
-FRIGHTENED_RETARGET_INTERVAL_TICKS = 120
+FRIGHTENED_RETARGET_INTERVAL_TICKS = 0
 GHOST_COLORS = ["blue", "green", "orange", "purple"]
  
 # TODO(teammate): this default is a stand-in until the Game Over /
@@ -290,8 +290,27 @@ class Game:
         for ghost in self.ghosts:
             ghost.update_pixel_position()
  
+        self._retarget_arrived_frightened_ghosts()
+ 
         for ghost in self.ghosts:
             ghost.update()
+ 
+    def _retarget_arrived_frightened_ghosts(self) -> None:
+        """Immediately re-assign a target to any FRIGHTENED ghost that
+        just reached its previous one.
+ 
+        Without this, a ghost that reaches its escape target sits
+        completely still until the next scheduled retarget (up to
+        FRIGHTENED_RETARGET_INTERVAL_TICKS later) - which looks like a
+        freeze, and lets the player approach an idle ghost undetected.
+        """
+        needs_retarget = any(
+            ghost.state == GhostState.FRIGHTENED and ghost.escape_target is None
+            for ghost in self.ghosts
+        )
+ 
+        if needs_retarget:
+            self.update_frightened_targets()
  
     def update_frightened_targets(self) -> None:
         """Re-assign escape targets to every currently FRIGHTENED ghost."""
