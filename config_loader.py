@@ -244,7 +244,7 @@ class ConfigValidator:
         self,
         index: int,
         entry: Any,
-    ) -> Optional[Tuple[int, int]]:
+    ) -> (tuple[int, int] | None):
         """Validate a single 'level' array entry, or reject it."""
         if not isinstance(entry, dict):
             print(
@@ -256,13 +256,17 @@ class ConfigValidator:
         width = entry.get("width")
         height = entry.get("height")
 
-        if self._is_valid_maze_dimension(width) and self._is_valid_maze_dimension(height):
-            return width, height
-
-        print(
-            f"Config warning: level override #{index + 1} is missing "
-            f"or has an invalid width/height, using the default size"
-        )
+        if width is None or height is None:
+            print(
+                f"Config warning: level override #{index + 1} is missing "
+                f"or has an invalid width/height, using the default size"
+            )
+            return None
+        if (
+            self._is_valid_maze_dimension(width) and
+            self._is_valid_maze_dimension(height)
+        ):
+            return (width, height)
         return None
 
     @staticmethod

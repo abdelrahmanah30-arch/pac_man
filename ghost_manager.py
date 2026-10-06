@@ -41,8 +41,7 @@ class GhostManager:
 
         candidates: List[Candidate] = sorted(
             distances.items(),
-            key=lambda item: item[1],
-            reverse=True,
+            key=lambda item: item[1]
         )
 
         selected_targets: List[Position] = []
@@ -57,7 +56,9 @@ class GhostManager:
         candidates: List[Candidate],
         selected_targets: List[Position],
     ) -> Position:
-        """Pick the candidate that is farthest from every selected target.
+        """Picself.state == GameState.PAUSED and
+        self.input_handler.get_pause()k the candidate
+        that is farthest from every selected target.
 
         The first ghost simply gets the cell farthest from the player.
         Every ghost after that gets whichever remaining candidate

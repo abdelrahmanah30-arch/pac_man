@@ -1,6 +1,10 @@
 [
   {
     "name": "PLAYER",
+    "score": 2660
+  },
+  {
+    "name": "PLAYER",
     "score": 2470
   },
   {
@@ -22,5 +26,9 @@
   {
     "name": "PLAYER",
     "score": 210
+  },
+  {
+    "name": "PLAYER",
+    "score": 160
   }
 ]
